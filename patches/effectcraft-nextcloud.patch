@@ -1,5 +1,5 @@
 diff --git a/apps/effectcraft-web/Cargo.toml b/apps/effectcraft-web/Cargo.toml
-index 6c30f9a..c918330 100644
+index 6c30f9a5..c9183307 100644
 --- a/apps/effectcraft-web/Cargo.toml
 +++ b/apps/effectcraft-web/Cargo.toml
 @@ -12,6 +12,10 @@ workspace = true
@@ -22,7 +22,7 @@ index 6c30f9a..c918330 100644
      "UrlSearchParams",
      "Window",
 diff --git a/apps/effectcraft-web/src/app.rs b/apps/effectcraft-web/src/app.rs
-index 1a69524..af5666a 100644
+index 1a695240..af5666a4 100644
 --- a/apps/effectcraft-web/src/app.rs
 +++ b/apps/effectcraft-web/src/app.rs
 @@ -118,6 +118,7 @@ impl eframe::App for WebApp {
@@ -82,7 +82,7 @@ index 1a69524..af5666a 100644
      if let Some(el) = doc.get_element_by_id("loading") {
          el.remove();
 diff --git a/apps/effectcraft-web/src/files.rs b/apps/effectcraft-web/src/files.rs
-index 76b7991..19521ee 100644
+index 76b79912..19521eeb 100644
 --- a/apps/effectcraft-web/src/files.rs
 +++ b/apps/effectcraft-web/src/files.rs
 @@ -82,6 +82,15 @@ fn mime(name: &str) -> &'static str {
@@ -128,7 +128,7 @@ index 76b7991..19521ee 100644
      if let Err(e) = r {
 diff --git a/apps/effectcraft-web/src/host.rs b/apps/effectcraft-web/src/host.rs
 new file mode 100644
-index 0000000..e5f14f0
+index 00000000..e5f14f00
 --- /dev/null
 +++ b/apps/effectcraft-web/src/host.rs
 @@ -0,0 +1,309 @@
@@ -442,7 +442,7 @@ index 0000000..e5f14f0
 +    web_sys::Blob::new_with_u8_array_sequence(&js_sys::Array::of1(&array)).ok()
 +}
 diff --git a/apps/effectcraft-web/src/lib.rs b/apps/effectcraft-web/src/lib.rs
-index 0d59906..39586b3 100644
+index 0d59906f..39586b3f 100644
 --- a/apps/effectcraft-web/src/lib.rs
 +++ b/apps/effectcraft-web/src/lib.rs
 @@ -18,6 +18,9 @@
@@ -465,10 +465,10 @@ index 0d59906..39586b3 100644
  #[cfg(target_arch = "wasm32")]
  pub mod storage;
 diff --git a/crates/ui-egui/Cargo.toml b/crates/ui-egui/Cargo.toml
-index 0425323..8da521d 100644
+index be02fef5..536fdb4a 100644
 --- a/crates/ui-egui/Cargo.toml
 +++ b/crates/ui-egui/Cargo.toml
-@@ -42,3 +42,8 @@ exr = { workspace = true }
+@@ -43,3 +43,8 @@ exr = { workspace = true }
  [build-dependencies]
  serde_json = { workspace = true }
  toml = "1"
@@ -478,10 +478,10 @@ index 0425323..8da521d 100644
 +# (docs/brand/LICENSE-brand.txt).
 +unbranded = []
 diff --git a/crates/ui-egui/src/header.rs b/crates/ui-egui/src/header.rs
-index 40472f5..e2f9307 100644
+index 1260c9c9..3c3fd054 100644
 --- a/crates/ui-egui/src/header.rs
 +++ b/crates/ui-egui/src/header.rs
-@@ -577,10 +577,17 @@ fn ws_menu(app: &mut EffectcraftApp, ui: &mut egui::Ui) {
+@@ -579,10 +579,17 @@ fn ws_menu(app: &mut EffectcraftApp, ui: &mut egui::Ui) {
  
  /// The ArtCraft mark as supplied in `docs/brand` (the README's and getartcraft.com's logo; used
  /// unmodified, see `docs/brand/LICENSE-brand.txt`).
