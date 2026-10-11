@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!--
+  - SPDX-FileCopyrightText: 2026 Britton Couchman <brittondcouchman@gmail.com>
+  - SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+	<id>integration_effectcraft</id>
+	<name>EffectCraft integration</name>
+	<summary>Make motion graphics and effects in Nextcloud with EffectCraft</summary>
+	<description><![CDATA[Open an EffectCraft project or a video (MP4, MOV, WebM) in Files with **Edit in EffectCraft** and work right in the browser, the way you know from After Effects: compositions, layers, keyframes, hundreds of effects, layer styles, expressions, 3D cameras and lights, and the Render Queue.
+
+- A video is imported as footage. **Save** stores the project (.ecproj) in the folder you pick the first time, and to that file from then on.
+- Opening a saved project fetches its footage from your Nextcloud.
+- Render Queue outputs store the file in any folder you pick.
+- If someone else changes the project while you have it open, you choose whether to replace their version or save a copy.
+- Optionally, clicking an EffectCraft project in Files opens it in EffectCraft.
+
+EffectCraft runs entirely in your browser as WebAssembly. Files go only between your browser and your Nextcloud, and the server needs no extra software.
+
+This is a community integration based on [EffectCraft](https://github.com/storytold/effectcraft) by the ArtCraft team, an open-source, Rust-native motion graphics and visual effects app. It embeds a build of EffectCraft and is not made or endorsed by the ArtCraft team.
+
+**Requirements:** a browser with WebGPU or WebGL2, and a web server that serves `.wasm` files as `application/wasm` (Nextcloud's own Apache and nginx configurations do).]]></description>
+	<version>0.1.0</version>
+	<licence>agpl</licence>
+	<author mail="brittondcouchman@gmail.com" homepage="https://github.com/CyberFox-81">Britton Couchman</author>
+	<namespace>EffectCraftIntegration</namespace>
+	<category>multimedia</category>
+	<category>files</category>
+	<category>integration</category>
+	<website>https://github.com/CyberFox-81/integration_effectcraft</website>
+	<bugs>https://github.com/CyberFox-81/integration_effectcraft/issues</bugs>
+	<repository type="git">https://github.com/CyberFox-81/integration_effectcraft.git</repository>
+	<dependencies>
+		<nextcloud min-version="33" max-version="35"/>
+	</dependencies>
+</info>
