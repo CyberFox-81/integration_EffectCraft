@@ -478,10 +478,10 @@ index be02fef5..536fdb4a 100644
 +# (docs/brand/LICENSE-brand.txt).
 +unbranded = []
 diff --git a/crates/ui-egui/src/header.rs b/crates/ui-egui/src/header.rs
-index 1260c9c9..3c3fd054 100644
+index fb381cfd..d44ab8a1 100644
 --- a/crates/ui-egui/src/header.rs
 +++ b/crates/ui-egui/src/header.rs
-@@ -579,10 +579,17 @@ fn ws_menu(app: &mut EffectcraftApp, ui: &mut egui::Ui) {
+@@ -656,10 +656,17 @@ fn ws_menu(app: &mut EffectcraftApp, ui: &mut egui::Ui) {
  
  /// The ArtCraft mark as supplied in `docs/brand` (the README's and getartcraft.com's logo; used
  /// unmodified, see `docs/brand/LICENSE-brand.txt`).
