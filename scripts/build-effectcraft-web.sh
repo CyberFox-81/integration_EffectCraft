@@ -23,7 +23,7 @@
 set -euo pipefail
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-EFFECTCRAFT_REF="${EFFECTCRAFT_REF:-9a7d3e76991d5372448033b473dc12c2480a6a04}"
+EFFECTCRAFT_REF="${EFFECTCRAFT_REF:-67434e90388b6dca4417555346fa6850b6f96033}"
 SRC="${1:-$APP_DIR/build/effectcraft}"
 PATCH="$APP_DIR/patches/effectcraft-nextcloud.patch"
 OUT="$APP_DIR/web"
@@ -35,9 +35,12 @@ if [ ! -e "$SRC/.git" ]; then
 fi
 
 if grep -rq 'effectcraft:ready' "$SRC/apps/effectcraft-web/src"; then
-	echo "bridge patch already applied"
-else
+	echo "EffectCraft has the embedding bridge"
+elif [ -s "$PATCH" ]; then
 	git -C "$SRC" apply "$PATCH"
+else
+	echo "error: this EffectCraft has no embedding bridge, and there is no patch to add it" >&2
+	exit 1
 fi
 
 cargo_args=(build --profile release -p effectcraft-web --target wasm32-unknown-unknown --features unbranded)
