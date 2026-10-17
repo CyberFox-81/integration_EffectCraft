@@ -82,7 +82,7 @@ index 1a695240..af5666a4 100644
      if let Some(el) = doc.get_element_by_id("loading") {
          el.remove();
 diff --git a/apps/effectcraft-web/src/files.rs b/apps/effectcraft-web/src/files.rs
-index 76b79912..19521eeb 100644
+index 3f3f3a99..daf88021 100644
 --- a/apps/effectcraft-web/src/files.rs
 +++ b/apps/effectcraft-web/src/files.rs
 @@ -82,6 +82,15 @@ fn mime(name: &str) -> &'static str {
@@ -110,7 +110,7 @@ index 76b79912..19521eeb 100644
      }
      fn store_file(&self, path: &str, data: &[u8]) -> std::io::Result<()> {
          put(path, data.into());
-@@ -186,13 +195,13 @@ pub fn flush_downloads() {
+@@ -190,13 +199,13 @@ pub fn flush_downloads() {
      out.dedup_by(|a, b| a.0 == b.0);
      let r = match out.len() {
          0 => return,
