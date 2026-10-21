@@ -464,6 +464,52 @@ index 0d59906f..39586b3f 100644
  pub mod persist;
  #[cfg(target_arch = "wasm32")]
  pub mod storage;
+diff --git a/crates/engine/src/doc_path.rs b/crates/engine/src/doc_path.rs
+index c7416a8c..9bf88781 100644
+--- a/crates/engine/src/doc_path.rs
++++ b/crates/engine/src/doc_path.rs
+@@ -49,12 +49,20 @@ pub fn resolve(stored: &str, project: Option<&str>) -> Result<PathBuf, NotFollow
+     let path = craft_docpath::resolve(stored, project.as_deref()).map_err(NotFollowed::Refused)?;
+     // A path that is still relative would be taken from the working directory, which the
+     // project does not choose.
+-    if path.is_relative() {
++    if !is_rooted(&path) {
+         return Err(NotFollowed::NoProjectFolder);
+     }
+     Ok(path)
+ }
+ 
++/// Whether `path` is absolute. `Path::is_absolute` wants a Windows prefix on
++/// wasm32-unknown-unknown, so there it is never true, and every footage path a project stores
++/// would be refused in the web build; a rooted path (`/a/b`) counts as absolute everywhere but on
++/// Windows.
++fn is_rooted(path: &Path) -> bool {
++    if cfg!(windows) { path.is_absolute() } else { path.has_root() }
++}
++
+ /// The paths of `f` (its file and every frame of an image sequence) resolved against the document
+ /// saved at `document`, or why one of them is not followed.
+ fn footage_paths(f: &Footage, document: Option<&str>) -> Result<(String, Vec<String>), (String, NotFollowed)> {
+diff --git a/crates/engine/src/doc_path/tests.rs b/crates/engine/src/doc_path/tests.rs
+index b8dcbc19..846b245a 100644
+--- a/crates/engine/src/doc_path/tests.rs
++++ b/crates/engine/src/doc_path/tests.rs
+@@ -151,3 +151,15 @@ fn stored_paths_resolve_against_the_project() {
+     #[cfg(windows)]
+     assert!(super::resolve(r"\\server\share\x.mov", Some(r"\\SERVER\share\job\intro.ecproj")).is_ok());
+ }
++
++/// A rooted path is absolute without asking `Path::is_absolute`, which is never true on
++/// wasm32-unknown-unknown (where every stored footage path was refused).
++#[cfg(not(windows))]
++#[test]
++fn rooted_paths_count_as_absolute() {
++    use std::path::{Path, PathBuf};
++    assert!(super::is_rooted(Path::new("/host/Documents/Clip.mp4")));
++    assert!(!super::is_rooted(Path::new("Documents/Clip.mp4")));
++    let followed = super::resolve("/host/Documents/Clip.mp4", Some("/host/Documents/Clip.ecproj"));
++    assert_eq!(followed.ok(), Some(PathBuf::from("/host/Documents/Clip.mp4")));
++}
 diff --git a/crates/ui-egui/Cargo.toml b/crates/ui-egui/Cargo.toml
 index be02fef5..536fdb4a 100644
 --- a/crates/ui-egui/Cargo.toml
