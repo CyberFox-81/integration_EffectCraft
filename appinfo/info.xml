@@ -21,7 +21,7 @@ EffectCraft runs entirely in your browser as WebAssembly. Files go only between 
 This is a community integration based on [EffectCraft](https://github.com/storytold/effectcraft) by the ArtCraft team, an open-source, Rust-native motion graphics and visual effects app. It embeds a build of EffectCraft and is not made or endorsed by the ArtCraft team.
 
 **Requirements:** a browser with WebGPU or WebGL2, and a web server that serves `.wasm` files as `application/wasm` (Nextcloud's own Apache and nginx configurations do).]]></description>
-	<version>0.1.5</version>
+	<version>0.1.6</version>
 	<licence>agpl</licence>
 	<author mail="brittondcouchman@gmail.com" homepage="https://github.com/CyberFox-81">Britton Couchman</author>
 	<namespace>EffectCraftIntegration</namespace>

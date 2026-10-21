@@ -23,7 +23,7 @@
 set -euo pipefail
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-EFFECTCRAFT_REF="${EFFECTCRAFT_REF:-8f02f52a44a4b1ea807d8824b92301b96f896a06}"
+EFFECTCRAFT_REF="${EFFECTCRAFT_REF:-cee4c16c8ad53621aaf25c037564e77a2dd37090}"
 SRC="${1:-$APP_DIR/build/effectcraft}"
 PATCH="$APP_DIR/patches/effectcraft-nextcloud.patch"
 OUT="$APP_DIR/web"
