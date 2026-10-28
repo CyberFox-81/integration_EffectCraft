@@ -1,5 +1,5 @@
 diff --git a/apps/effectcraft-web/Cargo.toml b/apps/effectcraft-web/Cargo.toml
-index 6c30f9a5..c9183307 100644
+index 28ea2f36..678325f4 100644
 --- a/apps/effectcraft-web/Cargo.toml
 +++ b/apps/effectcraft-web/Cargo.toml
 @@ -12,6 +12,10 @@ workspace = true
@@ -18,14 +18,14 @@ index 6c30f9a5..c9183307 100644
      "HtmlInputElement",
      "Location",
 +    "MessageEvent",
+     "Navigator",
      "Url",
      "UrlSearchParams",
-     "Window",
 diff --git a/apps/effectcraft-web/src/app.rs b/apps/effectcraft-web/src/app.rs
-index 1a695240..af5666a4 100644
+index 169529e5..47f6ce4a 100644
 --- a/apps/effectcraft-web/src/app.rs
 +++ b/apps/effectcraft-web/src/app.rs
-@@ -118,6 +118,7 @@ impl eframe::App for WebApp {
+@@ -131,6 +131,7 @@ impl eframe::App for WebApp {
  
      fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
          self.app.ui(ui, frame);
@@ -33,8 +33,8 @@ index 1a695240..af5666a4 100644
      }
  }
  
-@@ -186,8 +187,10 @@ pub async fn start(canvas_id: String) -> Result<(), JsValue> {
-     eframe::WebLogger::init(log::LevelFilter::Info).ok();
+@@ -204,8 +205,10 @@ pub async fn start(canvas_id: String) -> Result<(), JsValue> {
+     effectcraft_ui_egui::i18n::set_system_locales(query_value("lang"), browser.collect());
      let doc = web_sys::window().and_then(|w| w.document()).ok_or("no document")?;
      let canvas: web_sys::HtmlCanvasElement = doc.get_element_by_id(&canvas_id).ok_or("no canvas")?.dyn_into()?;
 -    let empty = query_flag("empty");
@@ -45,8 +45,8 @@ index 1a695240..af5666a4 100644
 +    let home = query_flag("home") && !embedded;
      // Browser storage: settings, recent projects, imported media, saved projects, auto-saves and
      // the last session come back.
-     let t0 = js_sys::Date::now();
-@@ -204,7 +207,7 @@ pub async fn start(canvas_id: String) -> Result<(), JsValue> {
+     // Monotonic (performance.now) rather than the wall clock: a system-time jump must not turn
+@@ -224,7 +227,7 @@ pub async fn start(canvas_id: String) -> Result<(), JsValue> {
      diskcache::init();
      storage::refresh();
      let runner = eframe::WebRunner::new();
@@ -55,7 +55,7 @@ index 1a695240..af5666a4 100644
          .start(
              canvas,
              eframe::WebOptions::default(),
-@@ -246,7 +249,7 @@ pub async fn start(canvas_id: String) -> Result<(), JsValue> {
+@@ -267,7 +270,7 @@ pub async fn start(canvas_id: String) -> Result<(), JsValue> {
                  let mut app = EffectcraftApp::new(session);
                  app.set_gpu_failure_bridge(gpu_failures);
                  app.ui.start_screen = home;
@@ -64,7 +64,7 @@ index 1a695240..af5666a4 100644
                      app.offer_recovery(r);
                  }
                  install_hooks(&mut app);
-@@ -262,10 +265,15 @@ pub async fn start(canvas_id: String) -> Result<(), JsValue> {
+@@ -284,10 +287,15 @@ pub async fn start(canvas_id: String) -> Result<(), JsValue> {
                  app = app.with_control(rx);
                  let backend = cc.wgpu_render_state.as_ref().map(|rs| format!("{:?}", rs.adapter.get_info().backend));
                  api::set_info("backend", json!(backend));
@@ -82,7 +82,7 @@ index 1a695240..af5666a4 100644
      if let Some(el) = doc.get_element_by_id("loading") {
          el.remove();
 diff --git a/apps/effectcraft-web/src/files.rs b/apps/effectcraft-web/src/files.rs
-index 3f3f3a99..daf88021 100644
+index 206314e4..e3bcbc81 100644
 --- a/apps/effectcraft-web/src/files.rs
 +++ b/apps/effectcraft-web/src/files.rs
 @@ -82,6 +82,15 @@ fn mime(name: &str) -> &'static str {
@@ -442,12 +442,12 @@ index 00000000..e5f14f00
 +    web_sys::Blob::new_with_u8_array_sequence(&js_sys::Array::of1(&array)).ok()
 +}
 diff --git a/apps/effectcraft-web/src/lib.rs b/apps/effectcraft-web/src/lib.rs
-index 0d59906f..39586b3f 100644
+index 97d2e887..1a90cf18 100644
 --- a/apps/effectcraft-web/src/lib.rs
 +++ b/apps/effectcraft-web/src/lib.rs
 @@ -18,6 +18,9 @@
- //! | cpal audio output | Web Audio: an AudioWorklet fed from the preview mixdown ([`audio`]) |
- //! | TCP control channel / MCP | `window.effectcraft` JavaScript API ([`api`]) |
+ //! | cpal audio output | Web Audio: an AudioWorklet fed from the preview mixdown (`audio`) |
+ //! | TCP control channel / MCP | `window.effectcraft` JavaScript API (`api`) |
  //!
 +//! With `?host=parent` inside an `<iframe>`, a same-origin parent page (such as a Nextcloud app)
 +//! sends the files to open and stores what EffectCraft saves and renders ([`host`]).
@@ -464,37 +464,45 @@ index 0d59906f..39586b3f 100644
  pub mod persist;
  #[cfg(target_arch = "wasm32")]
  pub mod storage;
-diff --git a/crates/engine/src/doc_path.rs b/crates/engine/src/doc_path.rs
-index c7416a8c..9bf88781 100644
---- a/crates/engine/src/doc_path.rs
-+++ b/crates/engine/src/doc_path.rs
-@@ -49,12 +49,20 @@ pub fn resolve(stored: &str, project: Option<&str>) -> Result<PathBuf, NotFollow
-     let path = craft_docpath::resolve(stored, project.as_deref()).map_err(NotFollowed::Refused)?;
-     // A path that is still relative would be taken from the working directory, which the
-     // project does not choose.
--    if path.is_relative() {
-+    if !is_rooted(&path) {
-         return Err(NotFollowed::NoProjectFolder);
-     }
-     Ok(path)
+diff --git a/crates/engine/src/footage/doc_path.rs b/crates/engine/src/footage/doc_path.rs
+index 7161b617..0eb9793d 100644
+--- a/crates/engine/src/footage/doc_path.rs
++++ b/crates/engine/src/footage/doc_path.rs
+@@ -46,7 +46,7 @@ pub fn resolve(stored: &str, project: Option<&str>) -> Result<PathBuf, NotFollow
+         let p = Path::new(p);
+         std::path::absolute(p).unwrap_or_else(|_| p.to_path_buf())
+     });
+-    craft_docpath::resolve_absolute(stored, project.as_deref()).map_err(|why| match why {
++    resolve_absolute(stored, project.as_deref()).map_err(|why| match why {
+         // Resolved, but still relative: it would be taken from the working directory, which the
+         // project does not choose. A Windows drive or share path (`C:\x`) stays invalid outside
+         // Windows even with a project.
+@@ -57,6 +57,20 @@ pub fn resolve(stored: &str, project: Option<&str>) -> Result<PathBuf, NotFollow
+     })
  }
  
-+/// Whether `path` is absolute. `Path::is_absolute` wants a Windows prefix on
-+/// wasm32-unknown-unknown, so there it is never true, and every footage path a project stores
-+/// would be refused in the web build; a rooted path (`/a/b`) counts as absolute everywhere but on
-+/// Windows.
++/// `craft_docpath::resolve_absolute`, with a rooted path (`/a/b`) counting as absolute everywhere
++/// but on Windows. It asks `Path::is_absolute`, which wants a Windows prefix on
++/// wasm32-unknown-unknown and so is never true there: every footage path a project stores would
++/// be refused in the web build.
++fn resolve_absolute(stored: &str, project: Option<&Path>) -> Result<PathBuf, Refused> {
++    let path = craft_docpath::resolve(stored, project)?;
++    if is_rooted(&path) { Ok(path) } else { Err(Refused::Invalid) }
++}
++
++/// Whether `path` is absolute on the running platform (see [`resolve_absolute`]).
 +fn is_rooted(path: &Path) -> bool {
 +    if cfg!(windows) { path.is_absolute() } else { path.has_root() }
 +}
 +
- /// The paths of `f` (its file and every frame of an image sequence) resolved against the document
- /// saved at `document`, or why one of them is not followed.
- fn footage_paths(f: &Footage, document: Option<&str>) -> Result<(String, Vec<String>), (String, NotFollowed)> {
-diff --git a/crates/engine/src/doc_path/tests.rs b/crates/engine/src/doc_path/tests.rs
-index b8dcbc19..846b245a 100644
---- a/crates/engine/src/doc_path/tests.rs
-+++ b/crates/engine/src/doc_path/tests.rs
-@@ -151,3 +151,15 @@ fn stored_paths_resolve_against_the_project() {
+ /// Whether `p` is a Windows drive or share path, which a project cannot make absolute outside Windows.
+ fn is_windows_rooted(p: &Path) -> bool {
+     let s = p.to_string_lossy();
+diff --git a/crates/engine/src/footage/doc_path/tests.rs b/crates/engine/src/footage/doc_path/tests.rs
+index d9d97124..6149ceee 100644
+--- a/crates/engine/src/footage/doc_path/tests.rs
++++ b/crates/engine/src/footage/doc_path/tests.rs
+@@ -169,3 +169,15 @@ fn stored_paths_resolve_against_the_project() {
      #[cfg(windows)]
      assert!(super::resolve(r"\\server\share\x.mov", Some(r"\\SERVER\share\job\intro.ecproj")).is_ok());
  }
@@ -511,10 +519,10 @@ index b8dcbc19..846b245a 100644
 +    assert_eq!(followed.ok(), Some(PathBuf::from("/host/Documents/Clip.mp4")));
 +}
 diff --git a/crates/ui-egui/Cargo.toml b/crates/ui-egui/Cargo.toml
-index be02fef5..536fdb4a 100644
+index ede0196e..50676dea 100644
 --- a/crates/ui-egui/Cargo.toml
 +++ b/crates/ui-egui/Cargo.toml
-@@ -43,3 +43,8 @@ exr = { workspace = true }
+@@ -50,3 +50,8 @@ exr = { workspace = true }
  [build-dependencies]
  serde_json = { workspace = true }
  toml = "1"
@@ -524,10 +532,10 @@ index be02fef5..536fdb4a 100644
 +# (docs/brand/LICENSE-brand.txt).
 +unbranded = []
 diff --git a/crates/ui-egui/src/header.rs b/crates/ui-egui/src/header.rs
-index fb381cfd..d44ab8a1 100644
+index 861d6fd9..359ac393 100644
 --- a/crates/ui-egui/src/header.rs
 +++ b/crates/ui-egui/src/header.rs
-@@ -656,10 +656,17 @@ fn ws_menu(app: &mut EffectcraftApp, ui: &mut egui::Ui) {
+@@ -666,10 +666,17 @@ fn ws_menu(app: &mut EffectcraftApp, ui: &mut egui::Ui) {
  
  /// The ArtCraft mark as supplied in `docs/brand` (the README's and getartcraft.com's logo; used
  /// unmodified, see `docs/brand/LICENSE-brand.txt`).
@@ -544,4 +552,4 @@ index fb381cfd..d44ab8a1 100644
 +#[cfg(not(feature = "unbranded"))]
  pub fn paint_logo(p: &egui::Painter, r: Rect) {
      let ctx = p.ctx();
-     let id = egui::Id::new("artcraft-mark");
+     let id = egui::Id::unique("artcraft-mark");
